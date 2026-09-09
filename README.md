@@ -223,7 +223,7 @@ The API will be available with the `docker profile active`, backed by a containe
 
 ### Option 02 : Run locally (IDE)
 
-1. Set the `required environment variables` in your `IDE's run configuration` (matching what's expected in `application.yaml` / `application-dev.yaml`)
+1. Set the `environment variables` listed in `.env.example` in your `IDE's run configuration`
 2. Run the application with the `dev profile active`
 
 This uses a `local PostgreSQL instance` instead of the Docker managed one.
