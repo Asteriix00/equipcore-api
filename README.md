@@ -165,45 +165,23 @@ Configuration is **externalized through environment variables never hardcoded :*
 
 ## CI Pipeline
 
-**Continuous Integration** is handled through **GitHub Actions** and structured around **three jobs :**
+**Continuous Integration** is handled through **GitHub Actions** and structured around **two jobs :**
 
-1. `Build and test :` Compiles the code and runs the automated tests.
-2. `Code quality :` Performs static analysis with **SonarQube Cloud** and waits for the **Quality Gate**.
-3. `Package and docker :` Packages the application and builds and pushes a tagged Docker image to **GitHub Container Registry (GHCR)**.
+1. `Build, test and quality :` Compiles the code, runs the automated tests, and performs static analysis with `SonarQube Cloud`, waiting for the `Quality Gate`.
+2. `Package and docker :` Packages the application and builds and pushes a tagged Docker image to `GitHub Container Registry (GHCR)`.
 
 ```text
-Push (any branch)
-      ↓      
-Build and test  
+Push (any branch) or Pull Request (main or develop)
+      ↓
+Build, test and quality
       ↓ (only if branch = main)
 Package and docker
 ```
 
-```text
-Pull Request (develop)
-      ↓
- Build and test
-      ↓
-  Code quality
-(SonarQube + Quality Gate)
-```
-
-```text
-Pull Request (main)
-      ↓
- Build and test
-      ↓
-  Code quality
-(SonarQube + Quality Gate)
-      ↓ PR merged (creates a push to main) 
-Package and docker
-```
-
-* `Build and test` runs on `every push`, giving fast feedback on any branch.
-* `Code quality` runs only on `pull requests` targeting `main` or `develop`. 
->_SonarQube Cloud's Free plan only supports analyzing the main branch and pull requests._
-* `Package and Docker` runs only on pushes to `main`, the `Docker image` is tagged using the `Git commit SHA` and pushed to `GHCR`.
-> The workflow configuration is defined in [`equipecore-ci.yml`](.github/workflows/equipcore-ci.yml).
+* `Build, test and quality` runs on `every push` to `any branch`, and on `every pull request` targeting `main` or `develop`, giving fast feedback with tests and static analysis combined.
+* `Package and Docker` runs only on pushes to `main`, after `Build, test and quality` succeeds. The `Docker image` is tagged using the `Git commit SHA` and pushed to `GHCR`.
+* Static analysis runs on `SonarQube Cloud's OSS plan`, which supports **full branch** and **pull request analysis**.
+> The workflow configuration is defined in [`equipcore-ci.yml`](.github/workflows/equipcore-ci.yml).
 
 ## Getting Started
 
