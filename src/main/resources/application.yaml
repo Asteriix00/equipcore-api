@@ -1,6 +1,9 @@
 spring:
   application:
     name: equipcore-api
+  jpa:
+    hibernate:
+      ddl-auto: validate
 
 server:
   servlet:
