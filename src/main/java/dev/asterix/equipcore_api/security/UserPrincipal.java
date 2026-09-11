@@ -2,6 +2,7 @@ package dev.asterix.equipcore_api.security;
 
 import dev.asterix.equipcore_api.model.User;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -11,6 +12,7 @@ import java.util.Collection;
 import java.util.List;
 
 @AllArgsConstructor
+@Getter
 public class UserPrincipal implements UserDetails {
 
     private final User user;
