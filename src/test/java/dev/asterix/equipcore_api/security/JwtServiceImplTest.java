@@ -3,12 +3,10 @@ package dev.asterix.equipcore_api.security;
 import dev.asterix.equipcore_api.config.JwtConfig;
 import dev.asterix.equipcore_api.enumeration.UserRole;
 import dev.asterix.equipcore_api.model.User;
+import dev.asterix.equipcore_api.support.JwtTestSupport;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,8 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import javax.crypto.SecretKey;
-import java.util.Date;
 import java.util.UUID;
 
 @SpringBootTest
@@ -58,7 +54,7 @@ class JwtServiceImplTest {
         Assertions.assertNotNull(token);
         Assertions.assertFalse(token.isBlank());
 
-        Claims claims = extractPayload(token);
+        Claims claims = JwtTestSupport.extractPayload(token, jwtConfig);
 
         Assertions.assertAll(
                 () -> Assertions.assertEquals(userPrincipal.getUsername(), claims.getSubject()),
@@ -129,42 +125,11 @@ class JwtServiceImplTest {
     @Test
     void isTokenValid_withValidEmailAndExpiredToken() {
 
-        String token = generateExpiredToken();
+        String token = JwtTestSupport.generateExpiredToken(userPrincipal, jwtConfig);
 
         Assertions.assertThrows(
                 ExpiredJwtException.class,
                 () -> jwtService.isTokenValid(userPrincipal.getUsername(), token)
         );
-    }
-
-    // Helper to get the secret key
-    private SecretKey getSecretKey() {
-
-        byte[] byteKey = Decoders.BASE64.decode(jwtConfig.getSecretKey());
-        return Keys.hmacShaKeyFor(byteKey);
-    }
-
-    // Helper to extract the token payload
-    private Claims extractPayload(String token) {
-
-        return Jwts
-                .parser()
-                .verifyWith(getSecretKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-    }
-
-    // Helper to generate an expired token
-    private String generateExpiredToken() {
-
-        return Jwts
-                .builder()
-                .subject(userPrincipal.getUsername())
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() - 1000))
-                .claim("role", userPrincipal.getUser().getRole().name())
-                .signWith(getSecretKey())
-                .compact();
     }
 }

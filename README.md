@@ -131,7 +131,6 @@ Error handling relies on a `single global exception handler` that catches both *
 
 Every `error response` follows the same structure :
 
-* `Status code`
 * `Message`
 * `Error code` identifying the exact cause
 
