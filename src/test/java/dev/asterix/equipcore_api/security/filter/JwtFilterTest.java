@@ -1,9 +1,11 @@
-package dev.asterix.equipcore_api.security;
+package dev.asterix.equipcore_api.security.filter;
 
 import dev.asterix.equipcore_api.config.JwtConfig;
 import dev.asterix.equipcore_api.enumeration.UserRole;
 import dev.asterix.equipcore_api.model.User;
 import dev.asterix.equipcore_api.repository.UserRepository;
+import dev.asterix.equipcore_api.security.JwtService;
+import dev.asterix.equipcore_api.security.UserPrincipal;
 import dev.asterix.equipcore_api.support.JwtTestSupport;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

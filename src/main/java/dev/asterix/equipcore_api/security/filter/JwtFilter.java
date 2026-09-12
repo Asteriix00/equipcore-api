@@ -1,7 +1,8 @@
-package dev.asterix.equipcore_api.security;
+package dev.asterix.equipcore_api.security.filter;
 
 import dev.asterix.equipcore_api.enumeration.ErrorCode;
 import dev.asterix.equipcore_api.exception.ErrorResponse;
+import dev.asterix.equipcore_api.security.JwtService;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
