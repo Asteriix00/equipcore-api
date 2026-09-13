@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.time.Instant;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -24,8 +25,14 @@ public class JwtServiceImpl implements JwtService {
         return Jwts
                 .builder()
                 .subject(userPrincipal.getUsername())
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + (jwtConfig.getExpiration() * 1000L)))
+                .issuedAt(
+                        Date.from(Instant.now())
+                )
+                .expiration(
+                        Date.from(
+                                Instant.now().plusSeconds(jwtConfig.getExpiration())
+                        )
+                )
                 .claim("role", userPrincipal.getUser().getRole().name())
                 .signWith(getSecretKey())
                 .compact();
@@ -36,7 +43,7 @@ public class JwtServiceImpl implements JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public Boolean isTokenValid(String email, String token) {
+    public boolean isTokenValid(String email, String token) {
 
         return extractSubject(token).equals(email) && !isTokenExpired(token);
     }
@@ -69,7 +76,7 @@ public class JwtServiceImpl implements JwtService {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    private Boolean isTokenExpired(String token) {
+    private boolean isTokenExpired(String token) {
 
         return extractExpiration(token).before(new Date());
     }

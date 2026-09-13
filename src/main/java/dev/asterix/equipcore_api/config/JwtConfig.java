@@ -20,5 +20,4 @@ public class JwtConfig {
 
     @Min(value = 60, message = "JWT expiration must be at least 1 minute")
     private long expiration;
-
 }

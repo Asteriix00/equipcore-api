@@ -25,7 +25,7 @@ public class SecurityConfig {
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     @Bean
-    public SecurityFilterChain customSecurityFilterChain(HttpSecurity httpSecurity) throws Exception {
+    public SecurityFilterChain customSecurityFilterChain(HttpSecurity httpSecurity) {
 
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
@@ -49,7 +49,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager customAuthenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager customAuthenticationManager(AuthenticationConfiguration authenticationConfiguration) {
 
         return authenticationConfiguration.getAuthenticationManager();
     }

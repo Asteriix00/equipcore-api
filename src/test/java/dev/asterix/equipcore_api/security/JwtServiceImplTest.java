@@ -30,7 +30,7 @@ class JwtServiceImplTest {
     private UserPrincipal userPrincipal;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
 
         User user = User
                 .builder()
@@ -98,7 +98,7 @@ class JwtServiceImplTest {
 
         String token = jwtService.generateToken(userPrincipal);
 
-        Boolean isValid = jwtService.isTokenValid(userPrincipal.getUsername(), token);
+        boolean isValid = jwtService.isTokenValid(userPrincipal.getUsername(), token);
 
         Assertions.assertTrue(isValid);
     }
@@ -108,7 +108,7 @@ class JwtServiceImplTest {
 
         String token = jwtService.generateToken(userPrincipal);
 
-        Boolean isValid = jwtService.isTokenValid("amine@email.com", token);
+        boolean isValid = jwtService.isTokenValid("amine@email.com", token);
 
         Assertions.assertFalse(isValid);
     }
@@ -116,20 +116,23 @@ class JwtServiceImplTest {
     @Test
     void isTokenValid_withValidEmailAndInvalidToken() {
 
+        String email = userPrincipal.getUsername();
+
         Assertions.assertThrows(
                 MalformedJwtException.class,
-                () -> jwtService.isTokenValid(userPrincipal.getUsername(), "invalid token value")
+                () -> jwtService.isTokenValid(email, "invalid token value")
         );
     }
 
     @Test
     void isTokenValid_withValidEmailAndExpiredToken() {
 
+        String email = userPrincipal.getUsername();
         String token = JwtTestSupport.generateExpiredToken(userPrincipal, jwtConfig);
 
         Assertions.assertThrows(
                 ExpiredJwtException.class,
-                () -> jwtService.isTokenValid(userPrincipal.getUsername(), token)
+                () -> jwtService.isTokenValid(email, token)
         );
     }
 }

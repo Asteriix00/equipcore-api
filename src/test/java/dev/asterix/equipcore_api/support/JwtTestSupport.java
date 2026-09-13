@@ -8,6 +8,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
 import javax.crypto.SecretKey;
+import java.time.Instant;
 import java.util.Date;
 
 public final class JwtTestSupport {
@@ -23,8 +24,14 @@ public final class JwtTestSupport {
         return Jwts
                 .builder()
                 .subject(userPrincipal.getUsername())
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() - 1000))
+                .issuedAt(
+                        Date.from(Instant.now())
+                )
+                .expiration(
+                        Date.from(
+                                Instant.now().minusSeconds(1)
+                        )
+                )
                 .claim("role", userPrincipal.getUser().getRole().name())
                 .signWith(getSecretKey(jwtConfig))
                 .compact();

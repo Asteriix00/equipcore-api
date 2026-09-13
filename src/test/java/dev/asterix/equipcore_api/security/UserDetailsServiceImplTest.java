@@ -28,7 +28,7 @@ class UserDetailsServiceImplTest {
     private User user;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
 
         user = User
                 .builder()
@@ -44,7 +44,7 @@ class UserDetailsServiceImplTest {
     }
 
     @Test
-    public void loadUserByUsername_userExists() {
+    void loadUserByUsername_userExists() {
 
         UserDetails result = userDetailsServiceImpl.loadUserByUsername(user.getEmail());
 
@@ -55,7 +55,7 @@ class UserDetailsServiceImplTest {
     }
 
     @Test
-    public void loadUserByUsername_userNotFound() {
+    void loadUserByUsername_userNotFound() {
 
         String email = "amine@gmail.com";
 

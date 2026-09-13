@@ -13,7 +13,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -23,8 +22,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import java.io.IOException;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -55,7 +57,7 @@ class JwtFilterTest {
 
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();
-        filterChain = Mockito.mock(FilterChain.class);
+        filterChain = mock(FilterChain.class);
 
         user = User
                 .builder()
@@ -109,7 +111,7 @@ class JwtFilterTest {
                 SecurityContextHolder.getContext().getAuthentication().getName()
         );
 
-        Mockito.verify(filterChain).doFilter(request, response);
+        verify(filterChain).doFilter(request, response);
     }
 
     @Test
@@ -133,7 +135,7 @@ class JwtFilterTest {
                 existingAuth,
                 SecurityContextHolder.getContext().getAuthentication()
         );
-        Mockito.verify(filterChain).doFilter(request, response);
+        verify(filterChain).doFilter(request, response);
     }
 
     @Test
@@ -141,7 +143,7 @@ class JwtFilterTest {
 
         jwtFilter.doFilterInternal(request, response, filterChain);
 
-        Mockito.verify(filterChain).doFilter(request, response);
+        verify(filterChain).doFilter(request, response);
 
         Assertions.assertNull(SecurityContextHolder.getContext().getAuthentication());
     }
@@ -153,7 +155,7 @@ class JwtFilterTest {
 
         jwtFilter.doFilterInternal(request, response, filterChain);
 
-        Mockito.verify(filterChain).doFilter(request, response);
+        verify(filterChain).doFilter(request, response);
 
         Assertions.assertNull(SecurityContextHolder.getContext().getAuthentication());
     }
@@ -166,7 +168,7 @@ class JwtFilterTest {
 
         jwtFilter.doFilterInternal(request, response, filterChain);
 
-        Mockito.verify(filterChain, Mockito.never()).doFilter(request, response);
+        verify(filterChain, never()).doFilter(request, response);
         Assertions.assertNull(SecurityContextHolder.getContext().getAuthentication());
 
         Assertions.assertEquals(401, response.getStatus());
@@ -182,7 +184,7 @@ class JwtFilterTest {
 
         jwtFilter.doFilterInternal(request, response, filterChain);
 
-        Mockito.verify(filterChain, Mockito.never()).doFilter(request, response);
+        verify(filterChain, never()).doFilter(request, response);
 
         Assertions.assertEquals(401, response.getStatus());
         Assertions.assertEquals("application/json", response.getContentType());
@@ -209,7 +211,7 @@ class JwtFilterTest {
 
         jwtFilter.doFilterInternal(request, response, filterChain);
 
-        Mockito.verify(filterChain, Mockito.never()).doFilter(request, response);
+        verify(filterChain, never()).doFilter(request, response);
 
         Assertions.assertEquals(401, response.getStatus());
         Assertions.assertTrue(response.getContentAsString().contains("INVALID_JWT"));
