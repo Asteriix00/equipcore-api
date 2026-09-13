@@ -8,3 +8,9 @@ spring:
   sql:
     init:
       mode: always
+
+application:
+  security:
+    jwt:
+      secret-key: VGhpc0lzQVRlc3RTZWNyZXRLZXlGb3JKV1RBdXRoZW50aWNhdGlvblRlc3RzMTIzNDU2Nzg5MA==
+      expiration: 3600

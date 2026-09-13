@@ -119,7 +119,7 @@ Security is addressed through three complementary mechanisms :
 - **Authorization :** role-based access control (RBAC).
 - **Password encoding :** passwords are never stored in plain text.
 
-> For details on **filter chain, JWT processing, etc.**, see [`security`](docs/security/).
+> For details on **filter chain, JWT processing, etc.**, see [`security`](docs/security/security.md).
 
 ## Validation and Error Handling
 
@@ -131,7 +131,6 @@ Error handling relies on a `single global exception handler` that catches both *
 
 Every `error response` follows the same structure :
 
-* `Status code`
 * `Message`
 * `Error code` identifying the exact cause
 
