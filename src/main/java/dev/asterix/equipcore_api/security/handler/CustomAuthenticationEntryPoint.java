@@ -1,7 +1,7 @@
 package dev.asterix.equipcore_api.security.handler;
 
 import dev.asterix.equipcore_api.enumeration.ErrorCode;
-import dev.asterix.equipcore_api.exception.ErrorResponse;
+import dev.asterix.equipcore_api.dto.error.ErrorResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

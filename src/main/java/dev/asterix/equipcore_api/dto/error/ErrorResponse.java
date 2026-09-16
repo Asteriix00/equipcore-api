@@ -1,4 +1,4 @@
-package dev.asterix.equipcore_api.exception;
+package dev.asterix.equipcore_api.dto.error;
 
 import dev.asterix.equipcore_api.enumeration.ErrorCode;
 
