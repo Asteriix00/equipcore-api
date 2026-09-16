@@ -6,5 +6,7 @@ public interface JwtService {
 
     String extractSubject(String token);
 
-    boolean isTokenValid(String email, String token);
+    boolean isTokenValid(String email, int tokenVersion, String token);
+
+    int extractTokenVersion(String token);
 }

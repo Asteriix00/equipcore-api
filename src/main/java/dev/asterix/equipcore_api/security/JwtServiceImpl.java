@@ -34,6 +34,7 @@ public class JwtServiceImpl implements JwtService {
                         )
                 )
                 .claim("role", userPrincipal.getUser().getRole().name())
+                .claim("tokenVersion", userPrincipal.getUser().getTokenVersion())
                 .signWith(getSecretKey())
                 .compact();
     }
@@ -43,9 +44,17 @@ public class JwtServiceImpl implements JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public boolean isTokenValid(String email, String token) {
+    public boolean isTokenValid(String email, int tokenVersion, String token) {
 
-        return extractSubject(token).equals(email) && !isTokenExpired(token);
+        return extractSubject(token).equals(email)
+                && extractTokenVersion(token) == tokenVersion
+                && !isTokenExpired(token);
+    }
+
+    @Override
+    public int extractTokenVersion(String token) {
+
+        return extractClaim(token, claims -> claims.get("tokenVersion", Integer.class));
     }
 
     private SecretKey getSecretKey() {

@@ -6,6 +6,7 @@ import dev.asterix.equipcore_api.dto.auth.LoginResponse;
 import dev.asterix.equipcore_api.enumeration.UserRole;
 import dev.asterix.equipcore_api.model.User;
 import dev.asterix.equipcore_api.repository.UserRepository;
+import dev.asterix.equipcore_api.security.UserPrincipal;
 import dev.asterix.equipcore_api.service.AuthService;
 import dev.asterix.equipcore_api.support.JwtTestSupport;
 import io.jsonwebtoken.Claims;
@@ -35,6 +36,7 @@ class AuthServiceImplTest {
     private UserRepository userRepository;
 
     private User user;
+    private UserPrincipal userPrincipal;
 
     @BeforeEach
     void setUp() {
@@ -50,6 +52,8 @@ class AuthServiceImplTest {
                 .build();
 
         userRepository.save(user);
+
+        userPrincipal = new UserPrincipal(user);
     }
 
     @Test
@@ -100,6 +104,27 @@ class AuthServiceImplTest {
         Assertions.assertThrows(
                 AuthenticationException.class,
                 () -> authService.login(loginRequest)
+        );
+    }
+
+    @Test
+    void logout_withValidUserPrincipal() {
+
+        int initialTokenVersion = user.getTokenVersion();
+
+        authService.logout(userPrincipal);
+
+        User currentUser = userRepository.findByEmail(user.getEmail()).orElseThrow();
+
+        Assertions.assertEquals(initialTokenVersion + 1, currentUser.getTokenVersion());
+    }
+
+    @Test
+    void logout_withUserPrincipalNull() {
+
+        Assertions.assertThrows(
+                NullPointerException.class,
+                () -> authService.logout(null)
         );
     }
 }

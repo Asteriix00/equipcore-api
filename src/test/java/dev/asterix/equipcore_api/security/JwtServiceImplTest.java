@@ -41,6 +41,7 @@ class JwtServiceImplTest {
                 .password("$2a$12$85NwZwUWcg9ve9Ry7MCmoefueK0fNTGyD2n5W7RdmAGqbGA9YoiU2")
                 .role(UserRole.ADMIN)
                 .isEnabled(true)
+                .tokenVersion(1)
                 .build();
 
         userPrincipal = new UserPrincipal(user);
@@ -49,6 +50,9 @@ class JwtServiceImplTest {
     @Test
     void generateToken_withValidUserPrincipal() {
 
+        String email = userPrincipal.getUsername();
+        String role = userPrincipal.getUser().getRole().name();
+        int tokenVersion = userPrincipal.getUser().getTokenVersion();
         String token = jwtService.generateToken(userPrincipal);
 
         Assertions.assertNotNull(token);
@@ -57,11 +61,12 @@ class JwtServiceImplTest {
         Claims claims = JwtTestSupport.extractPayload(token, jwtConfig);
 
         Assertions.assertAll(
-                () -> Assertions.assertEquals(userPrincipal.getUsername(), claims.getSubject()),
+                () -> Assertions.assertEquals(email, claims.getSubject()),
                 () -> Assertions.assertNotNull(claims.getIssuedAt()),
                 () -> Assertions.assertNotNull(claims.getExpiration()),
                 () -> Assertions.assertTrue(claims.getExpiration().after(claims.getIssuedAt())),
-                () -> Assertions.assertEquals(userPrincipal.getUser().getRole().name(), claims.get("role", String.class))
+                () -> Assertions.assertEquals(role, claims.get("role", String.class)),
+                () -> Assertions.assertEquals(tokenVersion, claims.get("tokenVersion", Integer.class))
         );
     }
 
@@ -77,15 +82,16 @@ class JwtServiceImplTest {
     @Test
     void extractSubject_withValidToken() {
 
+        String email = userPrincipal.getUsername();
         String token = jwtService.generateToken(userPrincipal);
 
         String subject = jwtService.extractSubject(token);
 
-        Assertions.assertEquals(userPrincipal.getUsername(), subject);
+        Assertions.assertEquals(email, subject);
     }
 
     @Test
-    void extractSubject_withNull_ThrowException() {
+    void extractSubject_withNull() {
 
         Assertions.assertThrows(
                 IllegalArgumentException.class,
@@ -94,45 +100,79 @@ class JwtServiceImplTest {
     }
 
     @Test
-    void isTokenValid_withValidEmailAndValidToken() {
+    void isTokenValid_withValidEmailValidTokenVersionAndValidToken() {
 
+        String email = userPrincipal.getUsername();
+        int tokenVersion = userPrincipal.getUser().getTokenVersion();
         String token = jwtService.generateToken(userPrincipal);
 
-        boolean isValid = jwtService.isTokenValid(userPrincipal.getUsername(), token);
+        boolean isValid = jwtService.isTokenValid(email, tokenVersion, token);
 
         Assertions.assertTrue(isValid);
     }
 
     @Test
-    void isTokenValid_withInvalidEmailAndValidToken() {
+    void isTokenValid_withInvalidEmailValidTokenVersionAndValidToken() {
 
+        int tokenVersion = userPrincipal.getUser().getTokenVersion();
         String token = jwtService.generateToken(userPrincipal);
 
-        boolean isValid = jwtService.isTokenValid("amine@email.com", token);
+        boolean isValid = jwtService.isTokenValid("amine@email.com", tokenVersion, token);
 
         Assertions.assertFalse(isValid);
     }
 
     @Test
-    void isTokenValid_withValidEmailAndInvalidToken() {
+    void isTokenValid_withValidEmailInvalidTokenVersionAndValidToken() {
 
         String email = userPrincipal.getUsername();
+        String token = jwtService.generateToken(userPrincipal);
+
+        boolean isValid = jwtService.isTokenValid(email, 2, token);
+
+        Assertions.assertFalse(isValid);
+    }
+
+    @Test
+    void isTokenValid_withValidEmailValidTokenVersionAndInvalidToken() {
+
+        String email = userPrincipal.getUsername();
+        int tokenVersion = userPrincipal.getUser().getTokenVersion();
 
         Assertions.assertThrows(
                 MalformedJwtException.class,
-                () -> jwtService.isTokenValid(email, "invalid token value")
+                () -> jwtService.isTokenValid(email, tokenVersion, "invalid token value")
         );
     }
 
     @Test
-    void isTokenValid_withValidEmailAndExpiredToken() {
+    void isTokenValid_withValidEmailValidTokenVersionAndExpiredToken() {
 
         String email = userPrincipal.getUsername();
+        int tokenVersion = userPrincipal.getUser().getTokenVersion();
         String token = JwtTestSupport.generateExpiredToken(userPrincipal, jwtConfig);
 
         Assertions.assertThrows(
                 ExpiredJwtException.class,
-                () -> jwtService.isTokenValid(email, token)
+                () -> jwtService.isTokenValid(email, tokenVersion, token)
+        );
+    }
+
+    @Test
+    void extractTokenVersion_withValidToken() {
+
+        String token = jwtService.generateToken(userPrincipal);
+        int tokenVersion = jwtService.extractTokenVersion(token);
+
+        Assertions.assertEquals(userPrincipal.getUser().getTokenVersion(), tokenVersion);
+    }
+
+    @Test
+    void extractTokenVersion_withNull() {
+
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> jwtService.extractTokenVersion(null)
         );
     }
 }

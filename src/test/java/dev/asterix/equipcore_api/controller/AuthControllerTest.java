@@ -2,9 +2,11 @@ package dev.asterix.equipcore_api.controller;
 
 import dev.asterix.equipcore_api.config.JwtConfig;
 import dev.asterix.equipcore_api.dto.auth.LoginRequest;
+import dev.asterix.equipcore_api.dto.auth.LoginResponse;
 import dev.asterix.equipcore_api.enumeration.UserRole;
 import dev.asterix.equipcore_api.model.User;
 import dev.asterix.equipcore_api.repository.UserRepository;
+import dev.asterix.equipcore_api.service.AuthService;
 import dev.asterix.equipcore_api.support.JwtTestSupport;
 import io.jsonwebtoken.Claims;
 import org.hamcrest.Matchers;
@@ -21,6 +23,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -45,6 +48,9 @@ class AuthControllerTest {
 
     private User user;
 
+    @Autowired
+    private AuthService authService;
+
     @BeforeEach
     void setUp() {
 
@@ -56,6 +62,7 @@ class AuthControllerTest {
                 .password("$2a$12$rBaWWGyuqP3pHj/z2TSsHe4YWNRr6gGuGkUKuocgzwcSfKcOZk0YO")
                 .role(UserRole.ADMIN)
                 .isEnabled(true)
+                .tokenVersion(1)
                 .build();
 
         userRepository.save(user);
@@ -169,5 +176,59 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.message").value("Validation failed"))
                 .andExpect(jsonPath("$.errorCode").value("VALIDATION_ERROR"))
                 .andExpect(jsonPath("$.errorCodes").value("EMAIL_INVALID"));
+    }
+
+    @Test
+    void logout_withValidToken() throws Exception {
+
+        int initialTokenVersion = user.getTokenVersion();
+        String token = obtainValidToken();
+
+        mockMvc.perform(
+                        patch("/auth")
+                                .header("Authorization", "Bearer " + token))
+                .andExpect(status().isNoContent());
+
+        User currentUser = userRepository.findByEmail(user.getEmail()).orElseThrow();
+
+        Assertions.assertEquals(initialTokenVersion + 1, currentUser.getTokenVersion());
+    }
+
+    @Test
+    void logout_invalidatePreviouslyIssuedToken() throws Exception {
+
+        String token = obtainValidToken();
+
+        mockMvc.perform(
+                        patch("/auth")
+                                .header("Authorization", "Bearer " + token))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(
+                        patch("/auth")
+                                .header("Authorization", "Bearer " + token))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Authentication is required to access this resource"))
+                .andExpect(jsonPath("$.errorCode").value("UNAUTHENTICATED"));
+    }
+
+    @Test
+    void logout_withoutToken() throws Exception {
+
+        mockMvc.perform(
+                        patch("/auth"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Authentication is required to access this resource"))
+                .andExpect(jsonPath("$.errorCode").value("UNAUTHENTICATED"));
+    }
+
+    // Helper to authenticate a user with valid credentials and return a valid token
+    private String obtainValidToken() {
+
+        LoginRequest loginRequest = new LoginRequest("amine.chakhar@gmail.com", "Password@123");
+
+        LoginResponse loginResponse = authService.login(loginRequest);
+
+        return loginResponse.token();
     }
 }

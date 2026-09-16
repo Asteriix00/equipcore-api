@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpMethod;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -67,6 +68,7 @@ class JwtFilterTest {
                 .password("$2a$12$85NwZwUWcg9ve9Ry7MCmoefueK0fNTGyD2n5W7RdmAGqbGA9YoiU2")
                 .role(UserRole.ADMIN)
                 .isEnabled(true)
+                .tokenVersion(1)
                 .build();
 
         userRepository.save(user);
@@ -81,19 +83,31 @@ class JwtFilterTest {
     }
 
     @Test
-    void shouldNotFilter_withPublicPath() throws ServletException {
+    void shouldNotFilter_withPublicPath() {
 
-        request.setServletPath("/auth/login");
+        request.setMethod(HttpMethod.POST.name());
+        request.setServletPath("/auth");
 
         Assertions.assertTrue(jwtFilter.shouldNotFilter(request));
     }
 
     @Test
-    void shouldNotFilter_withProtectedPath() throws ServletException {
+    void shouldNotFilter_withGetMethodToProtectedPath() {
 
         request.setServletPath("/equipments");
 
         boolean result = jwtFilter.shouldNotFilter(request);
+        Assertions.assertFalse(result);
+    }
+
+    @Test
+    void shouldNotFilter_withPostMethodToProtectedPath() {
+
+        request.setMethod(HttpMethod.POST.name());
+        request.setServletPath("/equipments");
+
+        boolean result = jwtFilter.shouldNotFilter(request);
+
         Assertions.assertFalse(result);
     }
 
@@ -135,6 +149,7 @@ class JwtFilterTest {
                 existingAuth,
                 SecurityContextHolder.getContext().getAuthentication()
         );
+
         verify(filterChain).doFilter(request, response);
     }
 
@@ -203,6 +218,7 @@ class JwtFilterTest {
                 .password("$2a$12$85NwZwUWcg9ve9Ry7MCmoefueK0fNTGyD2n5W7RdmAGqbGA9YoiU2")
                 .role(UserRole.EMPLOYEE)
                 .isEnabled(true)
+                .tokenVersion(1)
                 .build();
 
         String token = jwtService.generateToken(new UserPrincipal(ghostUser));
@@ -216,5 +232,22 @@ class JwtFilterTest {
         Assertions.assertEquals(401, response.getStatus());
         Assertions.assertTrue(response.getContentAsString().contains("INVALID_JWT"));
         Assertions.assertTrue(response.getContentAsString().contains("JWT is invalid"));
+    }
+
+    @Test
+    void doFilterInternal_withInvalidTokenVersion() throws ServletException, IOException {
+
+        String token = jwtService.generateToken(userPrincipal);
+
+        user.setTokenVersion(2);
+        userRepository.save(user);
+
+        request.addHeader("Authorization", "Bearer " + token);
+
+        jwtFilter.doFilterInternal(request, response, filterChain);
+
+        verify(filterChain).doFilter(request, response);
+
+        Assertions.assertNull(SecurityContextHolder.getContext().getAuthentication());
     }
 }
