@@ -10,13 +10,11 @@ Connected by **two associations :**
 * `tracking every equipment assignment and return over time`
 * `classifying equipment into a category`
 
-<img src="docs/database/MCD.drawio.svg" alt="Conceptual Data Model" width="100%"/>
-
 ## Entities
 
 | Entity | Attributes |
 |---     |---         |
-| **users** | id, first_name, last_name, email, password, role, is_enabled, created_at, updated_at |
+| **users** | id, first_name, last_name, email, password, role, is_enabled, token_version, created_at, updated_at |
 | **equipments** | id, name, serial_number, status, description, purchase_date, category_id, created_at, updated_at |
 | **categories** | id, name, created_at, updated_at |
 | **assignments** | id, user_id, user_full_name, user_email, equipment_id, equipment_name, equipment_serial_number, assigned_at, returned_at |
@@ -46,3 +44,4 @@ In addition to the `user_id` and `equipment_id` **foreign keys**, it stores a **
 |---|---|
 | `V1__initial_schema.sql` | Creates the **4 core tables :** `categories`, `users`, `equipments`, `assignments`|
 | `V2__seed_default_categories.sql` | Seeds the **10 default categories :** `LAPTOP`, `DESKTOP`, `MONITOR`, `KEYBOARD`, `MOUSE`, `SMARTPHONE`, `TABLET`, `PROJECTOR`, `PRINTER`, `HEADSET` |
+| `V3__add_token_version_to_users.sql` | Adds `token_version` to `users` table, used to invalidate all previously issued tokens on logout |
