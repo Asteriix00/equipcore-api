@@ -1,8 +1,9 @@
 package dev.asterix.equipcore_api.security.filter;
 
 import dev.asterix.equipcore_api.enumeration.ErrorCode;
-import dev.asterix.equipcore_api.exception.ErrorResponse;
+import dev.asterix.equipcore_api.dto.error.ErrorResponse;
 import dev.asterix.equipcore_api.security.JwtService;
+import dev.asterix.equipcore_api.security.UserPrincipal;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -10,11 +11,11 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -33,9 +34,9 @@ public class JwtFilter extends OncePerRequestFilter {
     private final ObjectMapper objectMapper;
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+    protected boolean shouldNotFilter(HttpServletRequest request) {
 
-        return request.getServletPath().startsWith("/auth/");
+        return HttpMethod.POST.matches(request.getMethod()) && "/auth".equals(request.getServletPath());
     }
 
     @Override
@@ -60,11 +61,11 @@ public class JwtFilter extends OncePerRequestFilter {
 
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                UserPrincipal userPrincipal = (UserPrincipal) userDetailsService.loadUserByUsername(email);
 
-                if (jwtService.isTokenValid(userDetails.getUsername(), token)) {
+                if (jwtService.isTokenValid(userPrincipal.getUsername(), userPrincipal.getUser().getTokenVersion(), token)) {
 
-                    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userPrincipal, null, userPrincipal.getAuthorities());
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 }

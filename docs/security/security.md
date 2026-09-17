@@ -16,6 +16,7 @@ The token carries the minimum needed to identify and authorize the user :
 
 - `sub` : the user's email
 - `role` : the user's role
+- `tokenVersion` : matched against the user's current value in the database on every request, to invalidate tokens issued before a logout
 - `iat` / `exp` : issued-at and expiration timestamps
 
 No **refresh token** is issued, access tokens are **short-lived (8 hours)**.
@@ -25,10 +26,19 @@ No **refresh token** is issued, access tokens are **short-lived (8 hours)**.
 A custom `JwtFilter` runs **once per request**, before Spring Security's default authentication filter. It :
 
 - **Skips** public endpoints (`/auth/**`) entirely.
+- **Skips** the public login endpoint (`POST /auth`) so other verbs on the same path (like the logout endpoint) stay protected.
 - **Extracts and validates** the Bearer token when present.
 - **Populates the security context** on success, or immediately returns a **structured JSON error** on an **invalid or expired token**.
 
 **Sessions are STATELESS**, and **CSRF protection is turned off**, since it only protects cookie-based sessions, which this API does not use.
+
+## Logout Strategy
+
+Since **access tokens** are **stateless** and never stored, logout doesn't rely on a blacklist. Instead, each user has a `tokenVersion` counter in the database, **incremented on every logout**.
+
+Every request carries its `tokenVersion` as a claim. It's compared against the current database value, a mismatch means the token was issued before the last logout, and the request is treated as unauthenticated.
+
+This invalidates **all** of a user's active tokens at once, across every device.
 
 ## Authorization
 

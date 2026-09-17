@@ -8,15 +8,16 @@ CREATE TABLE categories
 
 CREATE TABLE users
 (
-    id         UUID PRIMARY KEY,
-    first_name VARCHAR(50)              NOT NULL,
-    last_name  VARCHAR(50)              NOT NULL,
-    email      VARCHAR(100)             NOT NULL UNIQUE,
-    password   VARCHAR(255)             NOT NULL,
-    role       VARCHAR(10)              NOT NULL,
-    is_enabled BOOLEAN                  NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE
+    id            UUID PRIMARY KEY,
+    first_name    VARCHAR(50)              NOT NULL,
+    last_name     VARCHAR(50)              NOT NULL,
+    email         VARCHAR(100)             NOT NULL UNIQUE,
+    password      VARCHAR(255)             NOT NULL,
+    role          VARCHAR(10)              NOT NULL,
+    is_enabled    BOOLEAN                  NOT NULL DEFAULT FALSE,
+    token_version int                      NOT NULL DEFAULT 1,
+    created_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP WITH TIME ZONE
 );
 
 CREATE TABLE equipments

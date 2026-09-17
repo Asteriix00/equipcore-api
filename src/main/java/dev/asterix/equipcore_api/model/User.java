@@ -30,6 +30,8 @@ public class User {
 
     private boolean isEnabled;
 
+    private int tokenVersion;
+
     private Instant createdAt;
     private Instant updatedAt;
 
